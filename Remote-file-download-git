@@ -1,0 +1,50 @@
+<?php
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Get the URL from the input field
+    $remoteUrl = $_POST['remote_url'];
+
+    // Validate URL (you might want to perform more thorough validation)
+    if (filter_var($remoteUrl, FILTER_VALIDATE_URL)) {
+        // Fetch the remote file content
+        $fileContent = file_get_contents($remoteUrl);
+
+        if ($fileContent !== false) {
+            // Save the file locally (you can customize the local path and filename)
+            $localPath = 'downloads/';
+            $localFileName = basename($remoteUrl);
+            $localFilePath = $localPath . $localFileName;
+
+            file_put_contents($localFilePath, $fileContent);
+
+            // Provide the file for download
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="' . $localFileName . '"');
+            readfile($localFilePath);
+
+            // Optionally, you can delete the local file after download
+            unlink($localFilePath);
+            exit;
+        } else {
+            echo 'Failed to fetch the remote file content.';
+        }
+    } else {
+        echo 'Invalid URL.';
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remote File Downloader</title>
+</head>
+<body>
+    <form method="post">
+        <label for="remote_url">Remote File URL:</label>
+        <input type="text" name="remote_url" id="remote_url" required>
+        <button type="submit">Download</button>
+    </form>
+</body>
+</html>
